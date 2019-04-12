@@ -18,6 +18,7 @@ export interface MSICreatorOptions {
   appDirectory: string;
   appUserModelId?: string;
   description: string;
+  desktopShortcut?: ShortcutOptions;
   exe: string;
   extensions?: Array<string>;
   language?: number;
@@ -34,7 +35,7 @@ export interface MSICreatorOptions {
   signWithParams?: string;
   certificateFile?: string;
   certificatePassword?: string;
-  arch?: 'x64' | 'ia64'| 'x86';
+  arch?: 'x64' | 'ia64' | 'x86';
 }
 
 export interface UIOptions {
@@ -42,6 +43,11 @@ export interface UIOptions {
   template?: string;
   images?: UIImages;
   localizations?: Array<string>;
+}
+
+export interface ShortcutOptions {
+  shortcutIconId?: string
+  targetFileName?: string
 }
 
 export interface UIImages {
@@ -57,6 +63,7 @@ export class MSICreator {
   // Default Templates
   public componentTemplate = getTemplate('component');
   public componentRefTemplate = getTemplate('component-ref');
+  public desktopTemplate = getTemplate('desktop');
   public directoryTemplate = getTemplate('directory');
   public wixTemplate = getTemplate('wix');
   public uiTemplate = getTemplate('ui');
@@ -85,9 +92,10 @@ export class MSICreator {
   public certificateFile?: string;
   public certificatePassword?: string;
   public signWithParams?: string;
-  public arch: 'x64' | 'ia64'| 'x86' = 'x86';
+  public arch: 'x64' | 'ia64' | 'x86' = 'x86';
 
   public ui: UIOptions | boolean;
+  public desktopShortcut?: ShortcutOptions;
 
   private files: Array<string> = [];
   private directories: Array<string> = [];
@@ -118,6 +126,7 @@ export class MSICreator {
       || `com.squirrel.${this.shortName}.${this.exe}`;
 
     this.ui = options.ui !== undefined ? options.ui : false;
+    this.desktopShortcut = options.desktopShortcut;
   }
 
   /**
@@ -189,8 +198,17 @@ export class MSICreator {
     const scaffoldReplacements = {
       '<!-- {{ComponentRefs}} -->': componentRefs.map(({ xml }) => xml).join('\n'),
       '<!-- {{Directories}} -->': directories,
+      '<!-- {{Desktop}} -->': this.getDesktop(),
       '<!-- {{UI}} -->': this.getUI()
     };
+
+    const targetFileName = this.desktopShortcut && this.desktopShortcut.targetFileName
+      ? this.desktopShortcut.targetFileName
+      : this.exe;
+
+    const shortcutIconAttr = this.desktopShortcut && this.desktopShortcut.shortcutIconId
+      ? `Icon="${this.desktopShortcut.shortcutIconId}"`
+      : '';
 
     const replacements = {
       '{{ApplicationBinary}}': this.exe,
@@ -199,16 +217,19 @@ export class MSICreator {
       '{{ApplicationShortcutGuid}}': uuid(),
       '{{ApplicationShortName}}': this.shortName,
       '{{AppUserModelId}}': this.appUserModelId,
+      '{{DesktopShortcutGuid}}': uuid(),
+      '{{TargetFileName}}': targetFileName,
       '{{Language}}': this.language.toString(10),
       '{{Manufacturer}}': this.manufacturer,
       '{{ShortcutFolderName}}': this.shortcutFolderName,
+      '{{ShortcutIconAttr}}': shortcutIconAttr,
       '{{ShortcutName}}': this.shortcutName,
       '{{UpgradeCode}}': this.upgradeCode,
       '{{Version}}': this.version,
       '{{Platform}}': this.arch,
       '{{ProgramFilesFolder}}': this.arch === 'x86' ? 'ProgramFilesFolder' : 'ProgramFiles64Folder',
-      '{{ProcessorArchitecture}}' : this.arch,
-      '{{Win64YesNo}}' : this.arch === 'x86' ? 'no' : 'yes',
+      '{{ProcessorArchitecture}}': this.arch,
+      '{{Win64YesNo}}': this.arch === 'x86' ? 'no' : 'yes',
     };
 
     const completeTemplate = replaceInString(this.wixTemplate, scaffoldReplacements);
@@ -261,7 +282,7 @@ export class MSICreator {
       this.ui.localizations.forEach((l) => preArgs.push('-loc', l));
     }
 
-    const { code, stderr, stdout } = await spawnPromise(binary, [ ...preArgs, input ], {
+    const { code, stderr, stdout } = await spawnPromise(binary, [...preArgs, input], {
       env: process.env,
       cwd
     });
@@ -296,7 +317,7 @@ export class MSICreator {
       ? signWithParams.match(/(?:[^\s"]+|"[^"]*")+/g) as Array<string>
       : ['/a', '/f', path.resolve(certificateFile!), '/p', certificatePassword!];
 
-    const { code, stderr, stdout } = await spawnPromise(signToolPath, [ 'sign', ...args, msiFile ], {
+    const { code, stderr, stdout } = await spawnPromise(signToolPath, ['sign', ...args, msiFile], {
       env: process.env,
       cwd: path.join(__dirname, '../vendor'),
     });
@@ -334,6 +355,21 @@ export class MSICreator {
   }
 
   /**
+ * Returns Wix DesktopShortcut component
+ *
+ * @returns {string}
+ */
+  private getDesktop(): string {
+    let xml = '';
+
+    if (this.desktopShortcut) {
+      xml = this.desktopTemplate;
+    }
+
+    return xml;
+  }
+
+  /**
    * Returns Wix UI properties
    *
    * @returns {string}
@@ -353,9 +389,9 @@ export class MSICreator {
       .map((key) => {
         return propertyMap[key]
           ? replaceInString(this.propertyTemplate, {
-              '{{Key}}': propertyMap[key],
-              '{{Value}}': (images as any)[key]
-            })
+            '{{Key}}': propertyMap[key],
+            '{{Value}}': (images as any)[key]
+          })
           : '';
       })
       .join('\n');
@@ -371,10 +407,10 @@ export class MSICreator {
    * @returns {string}
    */
   private getDirectoryForTree(tree: FileFolderTree,
-                              treePath: string,
-                              indent: number,
-                              id?: string,
-                              name?: string): string {
+    treePath: string,
+    indent: number,
+    id?: string,
+    name?: string): string {
     const childDirectories = Object.keys(tree)
       .filter((k) => !k.startsWith('__ELECTRON_WIX_MSI'))
       .map((k) => {
