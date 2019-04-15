@@ -83,6 +83,8 @@ await msiCreator.compile();
   Windows Start Menu. Will use the manufacturer field if left undefined.
 * `shortcutName` (string, optional) - Name of the shortcut  in the
   Windows Start Menu. Will use the app's name field if left undefined.
+* `shortcutTarget` (string, optional) - The application executable name. If none is
+  passed, `exe` will be used.
 * `programFilesFolderName` (string, optional) - Name of the folder your app will
   live in. Will use the app's name if left undefined.
 * `upgradeCode` (string, optional) - A unique UUID used by your app to identify
@@ -108,8 +110,6 @@ await msiCreator.compile();
 ##### Desktop Shortcut Configuration (Optional)
 
 * `shortcutIconId` (optional, string) Reference Id to `<Icon/>` element in WixUITemplate.
-* `targetFileName` (string, optional) - The application executable name. If none is
-  passed, `exe` will be used.
 
 ##### UI Configuration (Optional)
 

@@ -18,7 +18,7 @@ export interface MSICreatorOptions {
   appDirectory: string;
   appUserModelId?: string;
   description: string;
-  desktopShortcut?: ShortcutOptions;
+  desktopShortcut?: DesktopShortcutOptions;
   exe: string;
   extensions?: Array<string>;
   language?: number;
@@ -29,6 +29,7 @@ export interface MSICreatorOptions {
   shortName?: string;
   shortcutFolderName?: string;
   shortcutName?: string;
+  shortcutTarget?: string
   ui?: UIOptions | boolean;
   upgradeCode?: string;
   version: string;
@@ -45,9 +46,8 @@ export interface UIOptions {
   localizations?: Array<string>;
 }
 
-export interface ShortcutOptions {
+export interface DesktopShortcutOptions {
   shortcutIconId?: string
-  targetFileName?: string
 }
 
 export interface UIImages {
@@ -87,6 +87,7 @@ export class MSICreator {
   public shortName: string;
   public shortcutFolderName: string;
   public shortcutName: string;
+  public shortcutTarget: string;
   public upgradeCode: string;
   public version: string;
   public certificateFile?: string;
@@ -95,7 +96,7 @@ export class MSICreator {
   public arch: 'x64' | 'ia64' | 'x86' = 'x86';
 
   public ui: UIOptions | boolean;
-  public desktopShortcut?: ShortcutOptions;
+  public desktopShortcut?: DesktopShortcutOptions;
 
   private files: Array<string> = [];
   private directories: Array<string> = [];
@@ -117,6 +118,7 @@ export class MSICreator {
     this.shortName = options.shortName || options.name;
     this.shortcutFolderName = options.shortcutFolderName || options.manufacturer;
     this.shortcutName = options.shortcutName || options.name;
+    this.shortcutTarget = options.shortcutTarget || options.exe;
     this.signWithParams = options.signWithParams;
     this.upgradeCode = options.upgradeCode || uuid();
     this.version = options.version;
@@ -202,10 +204,6 @@ export class MSICreator {
       '<!-- {{UI}} -->': this.getUI()
     };
 
-    const targetFileName = this.desktopShortcut && this.desktopShortcut.targetFileName
-      ? this.desktopShortcut.targetFileName
-      : this.exe;
-
     const shortcutIconAttr = this.desktopShortcut && this.desktopShortcut.shortcutIconId
       ? `Icon="${this.desktopShortcut.shortcutIconId}"`
       : '';
@@ -218,12 +216,12 @@ export class MSICreator {
       '{{ApplicationShortName}}': this.shortName,
       '{{AppUserModelId}}': this.appUserModelId,
       '{{DesktopShortcutGuid}}': uuid(),
-      '{{TargetFileName}}': targetFileName,
       '{{Language}}': this.language.toString(10),
       '{{Manufacturer}}': this.manufacturer,
       '{{ShortcutFolderName}}': this.shortcutFolderName,
       '{{ShortcutIconAttr}}': shortcutIconAttr,
       '{{ShortcutName}}': this.shortcutName,
+      '{{ShortcutTarget}}': this.shortcutTarget,
       '{{UpgradeCode}}': this.upgradeCode,
       '{{Version}}': this.version,
       '{{Platform}}': this.arch,

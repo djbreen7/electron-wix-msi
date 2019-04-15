@@ -51,7 +51,7 @@
         <Shortcut Id="ApplicationStartMenuShortcut"
                   Name="{{ShortcutName}}"
                   Description="{{ApplicationDescription}}"
-                  Target="[APPLICATIONROOTDIRECTORY]{{ApplicationBinary}}.exe"
+                  Target="[APPLICATIONROOTDIRECTORY]{{ShortcutTarget}}"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY" {{ShortcutIconAttr}}>
           <ShortcutProperty Key="System.AppUserModel.ID" Value="{{AppUserModelId}}" />
         </Shortcut>

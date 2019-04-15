@@ -3,7 +3,7 @@
         <Shortcut Id="MyDesktopShortcut"
             Name="{{ShortcutName}}"
             Description="{{ApplicationDescription}}"
-            Target="[APPLICATIONROOTDIRECTORY]{{TargetFileName}}.exe"
+            Target="[APPLICATIONROOTDIRECTORY]{{ShortcutTarget}}"
             WorkingDirectory="INSTALLFOLDER" {{ShortcutIconAttr}}>
         </Shortcut>
         <RegistryValue Root="HKCU"
