@@ -29,6 +29,7 @@
     </InstallExecuteSequence>
 
 <!-- {{UI}} -->
+<!-- {{CustomActions}} -->
 
     <!-- Step 2: Add files and directories -->
     <Directory Id="TARGETDIR" Name="SourceDir">

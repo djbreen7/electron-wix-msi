@@ -17,6 +17,7 @@ const debug = require('debug')('electron-wix-msi');
 export interface MSICreatorOptions {
   appDirectory: string;
   appUserModelId?: string;
+  customActions?: Array<CustomAction>;
   description: string;
   desktopShortcut?: DesktopShortcutOptions;
   exe: string;
@@ -46,6 +47,34 @@ export interface UIOptions {
   localizations?: Array<string>;
 }
 
+export interface CustomAction {
+  id: string;
+  parentElement: string;
+  xml: string;
+  directory?: string;
+  executeOption?: CustomActionExecuteOption | string;
+  impersonate?: boolean;
+  returnOption?: CustomActionReturnOption | string;
+  exeCommand?: string;
+}
+
+export enum CustomActionExecuteOption {
+  commit = 'commit',
+  deferred = 'deferred',
+  firstSequence = 'firstSequence',
+  immediate = 'immediate',
+  oncePerProcess = 'oncePerProcess',
+  rollback = 'rollback',
+  secondSequence = 'secondSequence'
+}
+
+export enum CustomActionReturnOption {
+  asyncNoWait = 'asyncNoWait',
+  asyncWait = 'asyncWait',
+  check = 'check',
+  ignore = 'ignore'
+}
+
 export interface DesktopShortcutOptions {
   shortcutIconId?: string
 }
@@ -63,6 +92,7 @@ export class MSICreator {
   // Default Templates
   public componentTemplate = getTemplate('component');
   public componentRefTemplate = getTemplate('component-ref');
+  public customActionTemplate = getTemplate('custom-action');
   public desktopTemplate = getTemplate('desktop');
   public directoryTemplate = getTemplate('directory');
   public wixTemplate = getTemplate('wix');
@@ -76,6 +106,7 @@ export class MSICreator {
   // Configuration
   public appDirectory: string;
   public appUserModelId: string;
+  public customActions: Array<CustomAction>;
   public description: string;
   public exe: string;
   public extensions: Array<string>;
@@ -107,6 +138,7 @@ export class MSICreator {
     this.appDirectory = path.normalize(options.appDirectory);
     this.certificateFile = options.certificateFile;
     this.certificatePassword = options.certificatePassword;
+    this.customActions = options.customActions || [];
     this.description = options.description;
     this.exe = options.exe.replace(/\.exe$/, '');
     this.extensions = options.extensions || [];
@@ -201,7 +233,8 @@ export class MSICreator {
       '<!-- {{ComponentRefs}} -->': componentRefs.map(({ xml }) => xml).join('\n'),
       '<!-- {{Directories}} -->': directories,
       '<!-- {{Desktop}} -->': this.getDesktop(),
-      '<!-- {{UI}} -->': this.getUI()
+      '<!-- {{UI}} -->': this.getUI(),
+      '<!-- {{CustomActions}} -->': this.getCustomActions()
     };
 
     const shortcutIconAttr = this.desktopShortcut && this.desktopShortcut.shortcutIconId
@@ -347,6 +380,33 @@ export class MSICreator {
       xml = replaceInString(uiTemplate, {
         '<!-- {{Properties}} -->': propertiesXml
       });
+    }
+
+    return xml;
+  }
+
+  private getCustomActions(): string {
+    let xml = '';
+
+    if (this.customActions.length) {
+      this.customActions.forEach(a => {
+        const template = this.customActionTemplate;
+        const parentElementClose = `</${a.parentElement}>`
+
+        xml += replaceInString(template, {
+          '{{Id}}': `Id="${a.id}"`,
+          '{{Directory}}': a.directory ? `Directory="${a.directory}"` : '',
+          '{{Execute}}': `Execute="${a.executeOption}"` || ``,
+          '{{Impersonate}}': a.impersonate ? `Impersonate="yes"` : 'Impersonate="no"',
+          '{{Return}}': `Return="${a.returnOption}"` || '',
+          '{{ExeCommand}}': `ExeCommand="${a.exeCommand}"`
+        })
+
+        xml = xml.replace(/^\s*[\r\n]/gm, '');
+        this.wixTemplate = this.wixTemplate.replace(parentElementClose, `\t${a.xml}\n\t\t${parentElementClose}`)
+      })
+
+      xml += '\r\n';
     }
 
     return xml;

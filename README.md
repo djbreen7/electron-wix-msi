@@ -68,11 +68,11 @@ await msiCreator.compile();
 * `outputDirectory` (string) - The output directory. Will contain the finished
   `msi` as well as the intermediate files .`wxs` and `.wixobj`.
 * `exe` (string) - The name of the exe.
+* `customActions` (CustomAction[], optional) - Experimental. Provide an array of CustomActions.
 * `description` (string) - The app's description.
 * `version` (string) - The app's version.
 * `name` (string) - The app's name.
 * `manufacturer` (string) - Name of the manufacturer.
-
 * `appUserModelId` (string, optional) - String to set as `appUserModelId` on the
   shortcut. If none is passed, it'll be set to `com.squirrel.(Name).(exe)`,
   which should match the id given to your app by Squirrel.
@@ -100,12 +100,43 @@ await msiCreator.compile();
   certificate given in `certificateFile`.
 * `signWithParams` (string, optional) - Paramaters to pass to `signtool.exe`.
   Overrides `certificateFile` and `certificatePassword`.
-* `extensions` (array, optional) - Specify WiX extensions to use e.g `['WixUtilExtension', 'C:\My WiX Extensions\FooExtension.dll']`
+* `extensions` (string[], optional) - Specify WiX extensions to use e.g `['WixUtilExtension', 'C:\My WiX Extensions\FooExtension.dll']`
 * `desktopShortcut` (ShorcutOptions, optoinal) - Enables configuration of desktopShortcuts.
 * `ui` (UIOptions, optional) - Enables configuration of the UI. See below for
   more information.
 * `arch` (string, optional) - Defines the architecure the MSI is build for. Values can
   be either `x86` or `x64`. Default's to `x86` if left undefined.
+
+##### Custom Actions Configuration
+[WiX v3 Documentation](http://wixtoolset.org/documentation/manual/v3/xsd/wix/customaction.html). Experimental.
+
+  * `id` (string) - The Id for the target `CustomAction`.
+  * `parentElement` (string) - Target element to place the `Custom` element, e.g., `InstallExecuteSequence`.
+  * `xml` (string) - Entire `Custom` element, e.g., `<Custom Action="StopProcess" Before="RemoveFiles">Installed</Custom>`.
+  * `directory` (string, optional) - Directory to perform custom action from.
+  * `executeOption` (CustomActionExecuteOption | string, optional)
+  * `impersonate` (boolean, optional)
+  * `returnOption` (CustomActionReturnOption | string, optional)
+  * `exeCommand` (string, optional)
+
+>**Custom Action Execute Option (enum)**  
+>Options for `Execute` attribute value.  
+>
+>   * `commit`
+>   * `deferred`
+>   * `firstSequence`
+>   * `immediate`
+>   * `oncePerProcess`
+>   * `rollback`
+>   * `secondSequence`
+> 
+> **Custom Action Return Option (enum)**  
+> Options for `Return` attribute value.
+> 
+>   * `asyncNoWait`
+>   * `asyncWait`
+>   * `check`
+>   * `ignore`
 
 ##### Desktop Shortcut Configuration (Optional)
 

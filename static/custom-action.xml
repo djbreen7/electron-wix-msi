@@ -1,0 +1,7 @@
+<CustomAction 
+    {{Id}}
+    {{Directory}}
+    {{Execute}}
+    {{Impersonate}}
+    {{Return}}
+    {{ExeCommand}} />
