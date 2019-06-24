@@ -15,18 +15,10 @@
              Compressed="yes"
              InstallScope="perMachine"
              Comments="Windows Installer Package"
-             Platform="{{Platform}}"/>
-    <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
-
-    <!-- Handle Updates -->
-    <Upgrade Id="{{UpgradeCode}}">
-      <UpgradeVersion OnlyDetect="yes" Property="PREVIOUSFOUND"
-          Maximum="{{Version}}" IncludeMaximum="no" />
-    </Upgrade>
-
-    <InstallExecuteSequence>
-      <RemoveExistingProducts After="InstallInitialize" />
-    </InstallExecuteSequence>
+             Platform="{{Platform}}" />
+      <MajorUpgrade AllowDowngrades="no"
+              DowngradeErrorMessage="A later version of {{ApplicationName}} is already installed. Setup will now exit." />
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
 
 <!-- {{UI}} -->
 <!-- {{CustomActions}} -->
