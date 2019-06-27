@@ -21,7 +21,6 @@
     <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
 
     <InstallExecuteSequence>	
-      <RemoveExistingProducts After="InstallInitialize" />	
     </InstallExecuteSequence>
 
 <!-- {{UI}} -->
