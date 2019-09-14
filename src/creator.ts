@@ -395,9 +395,9 @@ export class MSICreator {
     let xml = '';
 
     if (this.customActions.length) {
-      this.customActions.forEach(a => {
+      this.customActions.forEach((a) => {
         const template = this.customActionTemplate;
-        const parentElementClose = `</${a.parentElement}>`
+        const parentElementClose = `</${a.parentElement}>`;
 
         xml += replaceInString(template, {
           '{{Id}}': `Id="${a.id}"`,
@@ -406,11 +406,11 @@ export class MSICreator {
           '{{Impersonate}}': a.impersonate ? `Impersonate="yes"` : 'Impersonate="no"',
           '{{Return}}': `Return="${a.returnOption}"` || '',
           '{{ExeCommand}}': `ExeCommand="${a.exeCommand}"`
-        })
+        });
 
         xml = xml.replace(/^\s*[\r\n]/gm, '');
-        this.wixTemplate = this.wixTemplate.replace(parentElementClose, `\t${a.xml}\n\t\t${parentElementClose}`)
-      })
+        this.wixTemplate = this.wixTemplate.replace(parentElementClose, `\t${a.xml}\n\t\t${parentElementClose}`);
+      });
 
       xml += '\r\n';
     }
@@ -418,11 +418,11 @@ export class MSICreator {
     return xml;
   }
 
-/**
- * Returns Wix DesktopShortcut component
- *
- * @returns {string}
- */
+  /**
+   * Returns Wix DesktopShortcut component
+   *
+   * @returns {string}
+   */
   private getDesktop(): string {
     let xml = '';
 
@@ -471,10 +471,10 @@ export class MSICreator {
    * @returns {string}
    */
   private getDirectoryForTree(tree: FileFolderTree,
-    treePath: string,
-    indent: number,
-    id?: string,
-    name?: string): string {
+                              treePath: string,
+                              indent: number,
+                              id?: string,
+                              name?: string): string {
     const childDirectories = Object.keys(tree)
       .filter((k) => !k.startsWith('__ELECTRON_WIX_MSI'))
       .map((k) => {
