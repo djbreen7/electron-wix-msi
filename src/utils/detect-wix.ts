@@ -1,3 +1,5 @@
+const path = require('path');
+
 export interface HasBinaryResult {
   has: boolean;
   version: string | null;
@@ -9,7 +11,7 @@ export interface HasBinaryResult {
  * @returns {HasBinaryResult}
  */
 export function hasCandle(): HasBinaryResult {
-  return hasBinary('candle -?');
+  return hasBinary(`${path.join(`"${process.env.WIX}"`, 'bin', 'candle.exe')} -?`);
 }
 
 /**
@@ -18,7 +20,7 @@ export function hasCandle(): HasBinaryResult {
  * @returns {HasBinaryResult}
  */
 export function hasLight(): HasBinaryResult {
-  return hasBinary('light -?');
+  return hasBinary(`${path.join(`"${process.env.WIX}"`, 'bin', 'light.exe')} -?`);
 }
 
 /**
