@@ -15,10 +15,10 @@ const ROOTDIR_NAME = 'APPLICATIONROOTDIRECTORY';
 const debug = require('debug')('electron-wix-msi');
 const lightBinary = process.env.WIX
   ? `"${path.join(process.env.WIX, 'bin', 'light.exe')}"`
-  : 'light';
+  : 'light.exe';
 const candleBinary = process.env.WIX
   ? `"${path.join(process.env.WIX, 'bin', 'candle.exe')}"`
-  : 'candle';
+  : 'candle.exe';
 
 export interface MSICreatorOptions {
   appDirectory: string;
