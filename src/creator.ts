@@ -14,11 +14,11 @@ const getTemplate = (name: string) => fs.readFileSync(path.join(__dirname, `../s
 const ROOTDIR_NAME = 'APPLICATIONROOTDIRECTORY';
 const debug = require('debug')('electron-wix-msi');
 const lightBinary = process.env.WIX
-  ? path.join(`"${process.env.WIX}"`.replace(/"/g, ''), 'bin', 'light.exe')
-  : '';
+  ? `"${path.join(process.env.WIX, 'bin', 'light.exe')}"`
+  : 'light';
 const candleBinary = process.env.WIX
-  ? path.join(`"${process.env.WIX}"`.replace(/"/g, ''), 'bin', 'candle.exe')
-  : '';
+  ? `"${path.join(process.env.WIX, 'bin', 'candle.exe')}"`
+  : 'candle';
 
 export interface MSICreatorOptions {
   appDirectory: string;
